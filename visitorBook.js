@@ -41,7 +41,13 @@ async function call(body) {
     });
     const text = await res.text();
     let data;
-    try { data = JSON.parse(text); } catch (e) { throw new Error('Google sent back something unexpected (is the script deployed for "Anyone"?)'); }
+    try { data = JSON.parse(text); } catch (e) {
+      // Google sends an HTML page when the script crashed, isn't authorised, or the address is wrong
+      const msg = (text.match(/<title>([^<]*)<\/title>/i) || [])[1] || '';
+      const err = (text.match(/(?:Error|Exception)[^<]{0,200}/) || [])[0] || '';
+      console.log('Visitor book: unexpected reply', res.status, res.url, text.slice(0, 500));
+      throw new Error(`Google sent back a page instead of the book (status ${res.status}${msg ? ', "' + msg.trim() + '"' : ''}${err ? ': ' + err.trim() : ''}). Check the /exec address on Render, and that "setup" was run once in the script editor.`);
+    }
     if (!data.ok) throw new Error(data.error || 'the script said no');
     return data;
   } finally { clearTimeout(timer); }
