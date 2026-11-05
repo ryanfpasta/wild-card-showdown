@@ -6,6 +6,9 @@
 // 1) Change this to your own secret word. Put the SAME word in Render as VISITOR_BOOK_KEY.
 const SECRET = 'change-me-to-a-secret-word';
 
+// 2) true = email you every time a game is logged. false = no alerts.
+const ALERT_EACH_GAME = true;
+
 const COLUMNS = ['When', 'Games played', 'Rounds', 'Players', 'Winner', 'Scores', 'Ended early', 'Table'];
 
 function doPost(e) {
@@ -16,6 +19,7 @@ function doPost(e) {
   if (body.action === 'log') {
     const g = body.entry || {};
     sheet.appendRow([new Date(g.when || Date.now()), g.games, g.rounds, g.players, g.winner, g.scores, g.endedEarly ? 'yes' : '', g.table]);
+    if (ALERT_EACH_GAME) alertNewGame(g);
     return reply({ ok: true });
   }
   if (body.action === 'list') return reply({ ok: true, rows: rows(sheet) });
@@ -62,6 +66,13 @@ function emailBook(sheet) {
     attachments: [Utilities.newBlob(csv, 'text/csv', 'visitor-book.csv')],
   });
   return list.length;
+}
+
+function alertNewGame(g) {
+  MailApp.sendEmail(Session.getEffectiveUser().getEmail(),
+    'Wild Card Showdown: new game played' + (g.winner ? ' (winner: ' + g.winner + ')' : ''),
+    'Games: ' + g.games + '\nRounds: ' + g.rounds + '\nPlayers: ' + g.players + '\nScores: ' + g.scores +
+    (g.endedEarly ? '\nEnded early: yes' : '') + '\n\nThe whole book: ' + SpreadsheetApp.getActiveSpreadsheet().getUrl());
 }
 
 function reply(obj) {
