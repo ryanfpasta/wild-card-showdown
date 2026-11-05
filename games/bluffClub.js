@@ -26,6 +26,14 @@ function isTruth(fact, text) {
   });
 }
 
+// Every card is shown in the same casing so capitals can't give the truth (or a fake) away:
+// first letter upper case, SHOUTING turned down, no trailing full stop.
+function tidy(text) {
+  let t = String(text).trim().replace(/\s+/g, ' ').replace(/[.!]+$/, '');
+  if (t.length > 3 && !/[a-z]/.test(t)) t = t.toLowerCase();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
 function start(ctx) {
   const fact = ctx.pick('facts', FACTS);
   ctx.g = { phase: 'write', fact, fakes: {}, options: [], votes: {}, pts: {} };
@@ -41,7 +49,7 @@ function endWrite(ctx) {
     if (!t) continue;
     const k = norm(t) || t.toLowerCase();
     if (byText.has(k)) byText.get(k).authors.push(id);
-    else byText.set(k, { text: t, authors: [id], truth: false, house: false });
+    else byText.set(k, { text: tidy(t), authors: [id], truth: false, house: false });
   }
   const options = [...byText.values()];
   // too few fakes (people asleep, or a 2-player test)? the house adds some
@@ -51,9 +59,9 @@ function endWrite(ctx) {
     const t = pool.pop();
     if (used.has(norm(t)) || isTruth(g.fact, t)) continue;
     used.add(norm(t));
-    options.push({ text: t, authors: [], truth: false, house: true });
+    options.push({ text: tidy(t), authors: [], truth: false, house: true });
   }
-  options.push({ text: g.fact.a, authors: [], truth: true, house: false });
+  options.push({ text: tidy(g.fact.a), authors: [], truth: true, house: false });
   g.options = shuffle(options);
   g.phase = 'vote';
   g.votes = {};
@@ -139,7 +147,7 @@ function view(ctx, pid) {
     // lies first (most-picked last for drama), the truth at the very end
     v.options = truthFirst.filter(o => !o.truth).sort((a, b) => a.pickers.length - b.pickers.length)
       .concat(truthFirst.filter(o => o.truth));
-    v.answer = g.fact.a;
+    v.answer = tidy(g.fact.a);
     v.myVote = pid && g.votes[pid] !== undefined ? g.votes[pid] : null;
     v.points = g.pts;
   }
