@@ -1,0 +1,12 @@
+# Render "Blueprint" for Wild Card Showdown (optional: you can also set this up by hand, see HOSTING.txt)
+services:
+  - type: web
+    name: wild-card-showdown
+    runtime: node
+    plan: free            # change to "starter" (about $7/month) for always-on
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: MIN_PLAYERS
+        value: "3"

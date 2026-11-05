@@ -1,0 +1,17 @@
+{
+  "name": "wild-card-showdown",
+  "version": "2.0.0",
+  "description": "Wild Card Showdown - a phone party game hub for 3 to 8 players (Card Culprit, Bluff Club, Doodle Duel)",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "qrcode-generator": "2.0.4",
+    "ws": "8.22.1"
+  }
+}

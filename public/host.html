@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wild Card Showdown - Big Screen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='10' width='34' height='46' rx='5' fill='%237a1f2b' transform='rotate(-12 25 33)'/%3E%3Crect x='22' y='6' width='34' height='46' rx='5' fill='%23e9c46a' transform='rotate(10 39 29)'/%3E%3Ctext x='40' y='38' font-size='22' text-anchor='middle' fill='%237a1f2b' font-family='Georgia' font-weight='bold'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="host">
+<div id="banner" class="banner hidden">Lost connection to the game server. Is the black start.bat window still open?</div>
+<button id="soundBtn" class="soundbtn">🔊 Click for sound</button>
+<div class="host-wrap" id="wrap">
+  <section class="host-left">
+    <h1 class="logo">Wild Card <span>Showdown</span></h1>
+    <div class="joinhint">Scan to join, or go to</div>
+    <div class="joinurl" id="url">&hellip;</div>
+    <div class="qrbox"><img id="qr" alt="QR code to join the game"></div>
+    <div class="joinhint">Table code</div>
+    <div class="bigcode" id="code">&hellip;</div>
+    <div class="adapter hidden" id="adapterBox">
+      Network: <select id="adapter"></select>
+      <div style="margin-top:4px">Pick the one your phones are on (usually Wi-Fi).</div>
+    </div>
+    <div id="tvTipBox" class="tvtip-box"></div>
+    <div class="adapter hidden" id="noNet">No network found. Connect this laptop to Wi-Fi or a phone hotspot, then refresh.</div>
+  </section>
+  <section class="host-right">
+    <div id="main" class="host-main"></div>
+    <div class="tips" id="tips">
+      <div class="tips-title">Android phone can't connect?</div>
+      <div class="tips-sub">(Chrome says "site can't be reached" or ERR_TOO_MANY_RETRIES)</div>
+      <ol>
+        <li>In Chrome: &#8942; &rarr; Settings &rarr; Privacy and security &rarr; turn <b>off</b> "Always use secure connections".</li>
+        <li>Phone Settings &rarr; Apps &rarr; Chrome &rarr; Permissions &rarr; <b>Nearby devices</b> (or "Local network") &rarr; Allow.</li>
+      </ol>
+      <div class="tips-sub">Then close Chrome fully, reopen it and scan again.</div>
+    </div>
+  </section>
+</div>
+<div id="pausedHost" class="paused-overlay hidden"><div class="paused-box"><div class="big">⏸</div><h2>Paused</h2><p class="hint">The dealer paused the game.</p></div></div>
+<script src="common.js"></script>
+<script src="hubui.js"></script>
+<script src="games/cardCulprit.js"></script>
+<script src="games/bluffClub.js"></script>
+<script src="games/doodleDuel.js"></script>
+<script src="howto.js"></script>
+<script src="host.js"></script>
+</body>
+</html>

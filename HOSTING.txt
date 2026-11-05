@@ -1,0 +1,107 @@
+WILD CARD SHOWDOWN - PUTTING IT ONLINE
+======================================
+Right now the game runs on your laptop and phones must be on the same Wi-Fi.
+Putting it online means it lives on a website (e.g. https://wild-card-showdown.onrender.com)
+so anyone can play from anywhere, on Wi-Fi or mobile data, with the laptop off.
+
+The code is already ready for this. Nothing changes when you use start.bat:
+the laptop version works exactly as before. The online behaviour only switches
+on when the game is running on a hosting service.
+
+
+WHAT CHANGES WHEN IT'S ONLINE
+-----------------------------
+- Go to  https://<your-site>/host  on a TV, laptop or tablet to get a table
+  code and QR. Every host screen gets its OWN table, so different groups
+  never end up in the same game.
+- Or skip the host screen: on a phone, open the site and tap
+  "No laptop screen? Start a new table".
+- The QR code points at the public https address. No Wi-Fi, firewall or
+  Android "Nearby devices" fiddling needed.
+- Games are kept in memory. If the service restarts or you upload a new
+  version, any game in progress ends (just start a new table).
+- Online the default is 3 players to start (start.bat still uses 2).
+
+
+WHICH HOST? (prices as of late 2026 - check their sites, they change)
+---------------------------------------------------------------------
+Render  (RECOMMENDED - easiest, no command line)
+  Free plan: costs nothing, but goes to sleep after about 15 minutes with
+    no visitors. The next person to open it waits about a minute while it
+    wakes up, then it's normal. Fine for game nights: open the site a minute
+    before you play.
+  Starter plan: about $7/month, always on, no waiting.
+  You can start free and switch plans later with one click.
+
+Railway
+  Also easy and connects to GitHub the same way. No real free plan: about
+  $5/month (Hobby), which includes enough usage for a small game like this.
+  Doesn't sleep.
+
+Fly.io
+  Cheap (a few dollars a month) and fast, but you set it up by typing
+  commands in a terminal with their "flyctl" tool. Only worth it if you
+  enjoy tinkering.
+
+Short version: try Render Free. If the one-minute wake-up annoys you,
+switch to Starter ($7/month) or Railway.
+
+
+STEP 1 - PUT THE CODE ON GITHUB (one time, about 5 minutes)
+-----------------------------------------------------------
+1. Go to https://github.com and sign in (ryanfpasta).
+2. Click the "+" at the top right > "New repository".
+     Repository name:  wild-card-showdown
+     Private or Public: either works (Private is fine for Render).
+     Leave "Add a README" unticked.
+   Click "Create repository".
+3. On the next page click the link "uploading an existing file".
+4. Open the CardCulprit folder on the laptop. Select everything EXCEPT the
+   node_modules folder, and drag it onto the GitHub page:
+     .gitignore  config.js  HOSTING.txt  hub.js  package.json  prompts.js
+     README.txt  render.yaml  server.js  start.bat  and the folders
+     content  games  public
+   (If you can't see .gitignore, that's OK - it's optional.)
+5. Wait for the files to finish uploading, then click "Commit changes".
+   Check the content, games and public folders all appear (public has a
+   games folder inside it too).
+
+
+STEP 2 - CONNECT IT TO RENDER (one time, about 5 minutes)
+---------------------------------------------------------
+1. Go to https://render.com and click "Get Started". Sign up with GitHub
+   (easiest) and allow Render to see your wild-card-showdown repository.
+2. Click "New +" > "Web Service". Pick the wild-card-showdown repository.
+3. Fill in:
+     Name:            wild-card-showdown   (this becomes the web address)
+     Language:        Node
+     Branch:          main
+     Build Command:   npm install
+     Start Command:   node server.js
+     Instance Type:   Free  (or Starter for always-on)
+   Leave everything else as it is. You don't need to set PORT; Render does
+   that and the game picks it up automatically.
+4. Click "Create Web Service". Wait 2-3 minutes until it says "Live".
+5. Your address is shown at the top, e.g.
+     https://wild-card-showdown.onrender.com
+   Open  https://wild-card-showdown.onrender.com/host  and scan the QR code.
+
+(Alternative: in Render choose "New +" > "Blueprint" and pick the repo.
+It reads render.yaml and fills in all of the above for you.)
+
+
+UPDATING THE GAME LATER
+-----------------------
+Change the files on the laptop (e.g. add questions to prompts.js or content/facts.js), then on
+GitHub open the repository > "Add file" > "Upload files", drag the changed
+files in and click "Commit changes". Render notices and updates the site by
+itself within a few minutes.
+
+
+SETTINGS (Render > your service > Environment)
+----------------------------------------------
+  MIN_PLAYERS  players needed to start (default 3)
+  ANSWER_MS, GUESS_MS, VOTE_MS, REVEAL_MS, SCORES_MS  timers in milliseconds
+  PUBLIC_URL   only if you add your own domain, e.g. https://cardculprit.com
+               (otherwise not needed)
+After changing a setting, Render restarts the game automatically.
