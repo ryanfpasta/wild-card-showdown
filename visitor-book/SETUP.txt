@@ -1,0 +1,55 @@
+WILD CARD SHOWDOWN - VISITOR BOOK SETUP  (about 10 minutes, free, one time)
+==========================================================================
+
+Every finished game is written as a row in a Google Sheet that only you can see:
+when it started, which games were played, rounds, players (real name + character),
+the winner and everyone's final score. A Google Sheet is used because Render's free
+plan wipes its own disk whenever the game sleeps or redeploys.
+
+To get it emailed: open  https://wild-card-showdown.onrender.com/book , type your
+secret word and press "Email it to me" (or "Show the book" to see it on screen).
+It is emailed to the Google account that owns the sheet. You can also just open the
+sheet in Google Drive any time.
+
+
+PART 1 - the Google Sheet (on a computer, signed in to your Google account)
+--------------------------------------------------------------------------
+1. Go to https://sheets.new  (makes a new blank sheet). Name it "Wild Card visitor book".
+2. Menu: Extensions > Apps Script. A code editor opens.
+3. Delete everything in Code.gs and paste in the whole of visitor-book/Code.gs.
+4. On the line  const SECRET = 'change-me-to-a-secret-word';  replace the words in quotes
+   with your own secret word (e.g. 'purple-walrus-42'). Keep it to letters, numbers, dashes.
+5. Click the Save icon. In the function drop-down at the top pick "setup", press Run.
+   Google asks for permission: Review permissions > pick your account >
+   "Google hasn't verified this app" > Advanced > Go to (unsafe) > Allow.
+   (It's "unverified" only because you wrote it yourself. It asks to edit this sheet
+   and send email as you; it only ever emails you.)
+6. Deploy > New deployment > click the gear > Web app.
+     Description: visitor book
+     Execute as: Me
+     Who has access: Anyone      (needed so the game server can reach it; the secret
+                                  word stops anyone else using it)
+   Press Deploy, then copy the "Web app URL" (ends in /exec).
+
+
+PART 2 - tell the game about it (Render)
+-----------------------------------------
+1. https://dashboard.render.com > wild-card-showdown > Environment.
+2. Add environment variable:  VISITOR_BOOK_URL  =  the /exec address you copied
+3. Add environment variable:  VISITOR_BOOK_KEY  =  your secret word (exactly as in step 4)
+4. Save changes. Render restarts the game (about a minute).
+5. Test: open https://wild-card-showdown.onrender.com/book , enter the word, press
+   "Show the book". It should say "No games in the book yet." Play a quick game to the
+   end and the row appears.
+
+
+NOTES
+-----
+- A game is logged when it reaches the final screen (including when the dealer ends it
+  early; that row says "yes" under Ended early). Games abandoned with nobody pressing
+  End are not logged.
+- Players who left before the end aren't listed.
+- If you ever edit Code.gs, use Deploy > Manage deployments > edit (pencil) >
+  Version: New version, so the /exec address stays the same.
+- On the laptop (start.bat) nothing needs setting up: games go into visitor-book.csv
+  in the game folder.

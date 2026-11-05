@@ -11,6 +11,7 @@ const { exec } = require('child_process');
 const { WebSocketServer } = require('ws');
 const qrcode = require('qrcode-generator');
 const hub = require('./hub');
+const visitorBook = require('./visitorBook');
 
 function num(v, d) { const n = parseInt(v, 10); return Number.isFinite(n) && n >= 0 ? n : d; }
 const BASE_PORT = num(process.env.PORT, 3000);
@@ -132,6 +133,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' });
     return res.end(qrSvg(link));
   }
+  if (p === '/book' || p === '/book/') return bookPage(req, res);
   if (p === '/' || p === '/index.html') return serveFile(res, path.join(PUBLIC_DIR, 'index.html'));
   if (p === '/host' || p === '/host/') return serveFile(res, path.join(PUBLIC_DIR, 'host.html'));
 
@@ -141,6 +143,67 @@ const server = http.createServer((req, res) => {
   if (!file.startsWith(PUBLIC_DIR + path.sep)) { res.writeHead(403); return res.end(); }
   serveFile(res, file);
 });
+
+// ---------- /book: Ryan's private visitor book (see visitorBook.js) ----------
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let badTries = 0;
+setInterval(() => { badTries = 0; }, 10 * 60 * 1000).unref();
+
+function bookHtml(body) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Visitor book</title><style>
+:root{color-scheme:light dark;--bg:#16121f;--card:#231c33;--ink:#f4efff;--dim:#b7acd0;--acc:#ffcc33}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif;padding:16px}
+main{max-width:1000px;margin:0 auto}h1{margin:.2em 0 .6em}
+form{background:var(--card);padding:16px;border-radius:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+input{font:inherit;padding:10px;border-radius:8px;border:1px solid #555;min-width:0;flex:1 1 200px}
+button{font:inherit;font-weight:700;padding:10px 16px;border-radius:8px;border:0;background:var(--acc);color:#222;cursor:pointer}
+button.alt{background:#8a7bb0;color:#fff}.msg{margin:14px 0;padding:12px;border-radius:10px;background:var(--card)}
+.wrap{overflow-x:auto;margin-top:14px}table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid #3a3150;vertical-align:top}th{color:var(--dim)}
+</style></head><body><main><h1>📖 Visitor book</h1>${body}</main></body></html>`;
+}
+
+function bookForm(note) {
+  return (note ? `<div class="msg">${note}</div>` : '') +
+    `<form method="post" action="/book"><input type="password" name="key" placeholder="Secret word" autocomplete="current-password" required>
+<button name="action" value="show">Show the book</button><button class="alt" name="action" value="email">Email it to me</button></form>`;
+}
+
+function bookPage(req, res) {
+  const done = (html, code) => {
+    res.writeHead(code || 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
+    res.end(bookHtml(html));
+  };
+  if (!visitorBook.enabled()) {
+    return done(bookForm(ONLINE
+      ? 'The visitor book isn\'t switched on yet: VISITOR_BOOK_URL and VISITOR_BOOK_KEY need setting on Render (see visitor-book/SETUP.txt).'
+      : 'On the laptop, every game is saved to <b>visitor-book.csv</b> in the game folder. Open it with Excel.'));
+  }
+  if (req.method !== 'POST') return done(bookForm(''));
+  let raw = '';
+  req.on('data', d => { raw += d; if (raw.length > 4096) req.destroy(); });
+  req.on('end', async () => {
+    const form = new URLSearchParams(raw);
+    if (badTries >= 10) return done(bookForm('Too many wrong tries. Wait ten minutes and try again.'), 429);
+    if (!visitorBook.keyOk(form.get('key'))) { badTries++; return done(bookForm('That secret word isn\'t right.'), 403); }
+    try {
+      if (form.get('action') === 'email') {
+        const r = await visitorBook.email();
+        return done(bookForm(`Sent! ${r.count} game${r.count === 1 ? '' : 's'} emailed to your Google address. Check your inbox (and spam, the first time).`));
+      }
+      const rows = await visitorBook.list();
+      const cols = visitorBook.COLUMNS;
+      const table = rows.length
+        ? `<div class="wrap"><table><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>` +
+          rows.slice().reverse().map(r => `<tr>${cols.map((c, i) => `<td>${esc(r[i])}</td>`).join('')}</tr>`).join('') + '</table></div>'
+        : '<div class="msg">No games in the book yet.</div>';
+      done(bookForm(`${rows.length} game${rows.length === 1 ? '' : 's'} so far, newest first.`) + table);
+    } catch (e) {
+      done(bookForm('Couldn\'t reach the Google Sheet: ' + esc(e.message)), 502);
+    }
+  });
+}
 
 // ---------- WebSockets ----------
 const wss = new WebSocketServer({ server, maxPayload: 512 * 1024 }); // doodles can be big-ish

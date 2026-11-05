@@ -12,6 +12,7 @@ Three games ("branches") share one table, one leaderboard and one finale:
                   prompt each drawing was, then vote for the best.
 
 Want it online so you don't need the laptop? See HOSTING.txt.
+Want a private log of every game played (emailed to you on request)? See visitor-book/SETUP.txt.
 
 
 STARTING THE GAME (on the laptop)

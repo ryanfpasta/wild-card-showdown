@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const C = require('./config');
 const GAMES = require('./games');
 const randomName = require('./content/names');
+const visitorBook = require('./visitorBook');
 
 const GAME = Object.fromEntries(GAMES.map(g => [g.id, g]));
 const GAME_IDS = GAMES.map(g => g.id);
@@ -287,6 +288,7 @@ function startGame(room) {
   room.history = []; room.badges = {}; room.board = null; room.wagers = {}; room.recap = null;
   room.round = 0; room.rotation = []; room.lastGame = null; room.lastTwist = null;
   room.paused = false;
+  room.startedAt = Date.now(); room.logged = false;
   startRound(room);
 }
 
@@ -633,7 +635,31 @@ function finish(room) {
   clearTimer(room);
   room.paused = false;
   room.phase = 'final';
+  logGame(room);
   broadcast(room);
+}
+
+// one line in the visitor book per finished game (see visitorBook.js)
+function logGame(room) {
+  if (room.logged || !room.history.length) return;
+  room.logged = true;
+  try {
+    const label = p => p.real ? `${p.real} (${p.name})` : p.name;
+    const ranked = room.order.map(id => room.players.get(id)).filter(Boolean).sort((a, b) => b.score - a.score);
+    const counts = {};
+    for (const h of room.history) if (!h.showdown) { const n = GAME[h.gameId] ? GAME[h.gameId].name : h.gameId; counts[n] = (counts[n] || 0) + 1; }
+    const rounds = room.history.filter(h => !h.showdown).length;
+    visitorBook.record({
+      when: new Date(room.startedAt || Date.now()).toISOString(),
+      games: Object.entries(counts).map(([n, c]) => c > 1 ? `${n} x${c}` : n).join(', '),
+      rounds: `${rounds} of ${room.settings.rounds}` + (room.history.some(h => h.showdown) ? ' + showdown' : ''),
+      players: ranked.map(label).join(', '),
+      winner: championIds(room).map(id => label(room.players.get(id))).join(' & '),
+      scores: ranked.map(p => `${label(p)} ${p.score}`).join('; '),
+      endedEarly: rounds < room.settings.rounds,
+      table: room.code,
+    });
+  } catch (e) { console.log('Visitor book: could not log game -', e.message); }
 }
 
 function backToLobby(room) {
