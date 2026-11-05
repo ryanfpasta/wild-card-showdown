@@ -27,10 +27,12 @@ function isTruth(fact, text) {
 }
 
 // Every card is shown in the same casing so capitals can't give the truth (or a fake) away:
-// first letter upper case, SHOUTING turned down, no trailing full stop.
+// first letter upper case (except iPhone-style words), SHOUTING turned down, no trailing full stop.
 function tidy(text) {
   let t = String(text).trim().replace(/\s+/g, ' ').replace(/[.!]+$/, '');
   if (t.length > 3 && !/[a-z]/.test(t)) t = t.toLowerCase();
+  // words meant to start small, like iPhone or eBay, are left alone
+  if (/^[a-z]+[A-Z]/.test(t)) return t;
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
