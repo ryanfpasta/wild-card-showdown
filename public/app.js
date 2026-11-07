@@ -82,6 +82,8 @@
     }
     if (m.t === 'state') {
       state = m;
+      if (!state || state.gameKey !== m.gameKey) wagerPick = null;
+      WCS.checkNewGame(m);
       WCS.lastState = m;
       WCS.setClock(m);
       render();

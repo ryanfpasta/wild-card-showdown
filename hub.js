@@ -51,7 +51,7 @@ function createRoom(isDefault) {
     code: newCode(), isDefault: !!isDefault,
     players: new Map(), order: [], hosts: new Set(), dealerId: null,
     settings: defaultSettings(),
-    phase: 'lobby', round: 0, cur: null,
+    phase: 'lobby', round: 0, cur: null, gameKey: '',
     used: {}, rotation: [], lastGame: null, lastTwist: null,
     t: { h: null, fn: null, deadline: null, remaining: null, total: 0 }, paused: false,
     stats: {}, history: [], badges: {}, board: null,
@@ -234,6 +234,7 @@ function makeCtx(room) {
   const ctx = {
     g: null,
     round: room.round + (cur.duel ? 's' : ''),
+    gameKey: room.gameKey,
     settings: room.settings,
     finale: cur.finale,
     duel: cur.duel,
@@ -289,6 +290,11 @@ function startGame(room) {
   room.round = 0; room.rotation = []; room.lastGame = null; room.lastTwist = null;
   room.paused = false;
   room.startedAt = Date.now(); room.logged = false;
+  // fresh id for this game: drawing ids and typed drafts are keyed on it, so nothing from the
+  // last game (same room code, same round numbers) can be shown or re-sent in this one
+  room.gameKey = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  for (const p of room.players.values()) if (p.ws) p.ws.sentDrawings = null;
+  for (const h of room.hosts) h.sentDrawings = null;
   startRound(room);
 }
 
@@ -664,7 +670,7 @@ function logGame(room) {
 
 function backToLobby(room) {
   clearTimer(room);
-  room.phase = 'lobby'; room.round = 0; room.cur = null; room.paused = false;
+  room.phase = 'lobby'; room.round = 0; room.cur = null; room.paused = false; room.gameKey = '';
   room.board = null; room.recap = null; room.badges = {}; room.history = []; room.wagers = {};
   for (const p of room.players.values()) p.score = 0;
   for (const id of [...room.order]) { const p = room.players.get(id); if (!p.connected) scheduleLobbyDrop(room, p); }
@@ -705,7 +711,7 @@ function viewFor(room, pid) {
 
   const v = {
     t: 'state', code: room.code, phase: room.phase, you: pid || null, dealerId: room.dealerId,
-    settings: settingsView(room.settings), round: room.round, rounds: room.settings.rounds,
+    settings: settingsView(room.settings), round: room.round, rounds: room.settings.rounds, gameKey: room.gameKey,
     minPlayers: C.MIN_PLAYERS, maxPlayers: C.MAX_PLAYERS, paused: room.paused,
     players, msLeft, totalMs: t.fn ? t.total : null, step: room.step || 0,
     inRound: pid ? inRound(pid) : false,

@@ -17,7 +17,7 @@ function voters(ctx) {
   const a = ctx.duel.audience.filter(ctx.has);
   return a.length ? a : ctx.duel.contestants.filter(ctx.has);
 }
-function drawingId(ctx, pid) { return ctx.round + '-' + (ctx.duel ? 'duel-' : '') + pid; }
+function drawingId(ctx, pid) { return ctx.gameKey + '-' + ctx.round + '-' + (ctx.duel ? 'duel-' : '') + pid; }
 
 function start(ctx) {
   const g = ctx.g = {

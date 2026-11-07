@@ -259,5 +259,6 @@
     return 'The votes are in!';
   }
 
-  WCS.register('doodleDuel', { goal: goal, phone: phone, host: host, keep: keep, after: after, cue: cue, resync: resync, onDrawing: onDrawing });
+  WCS.register('doodleDuel', { goal: goal, phone: phone, host: host, keep: keep, after: after, cue: cue, resync: resync, onDrawing: onDrawing,
+    reset: function () { local.id = null; local.strokes = []; } });
 })();

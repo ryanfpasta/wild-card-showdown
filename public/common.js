@@ -234,6 +234,15 @@
     }
   };
   window.addEventListener('resize', function () { WCS.paintAll(); });
+  // a new game (or back to the lobby) in the same room: forget every drawing and per-game bit we kept
+  WCS.gameKey = null;
+  WCS.checkNewGame = function (s) {
+    var key = (s && s.gameKey) || '';
+    if (key === WCS.gameKey) return;
+    WCS.gameKey = key;
+    WCS.drawings = {};
+    for (var id in WCS.games) if (WCS.games[id].reset) WCS.games[id].reset();
+  };
 
   // ---------- generic "card flip" used by twists, reveals and awards ----------
   WCS.flipCard = function (front, back, cls, instant) {

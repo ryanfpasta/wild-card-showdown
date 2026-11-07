@@ -18,7 +18,7 @@
 //
 // ctx (made by the hub for each round):
 //   ctx.g                       the game's state object
-//   ctx.round, ctx.settings, ctx.finale
+//   ctx.round, ctx.gameKey (unique per game), ctx.settings, ctx.finale
 //   ctx.duel                    null, or {contestants: [ids], audience: [ids]} for the Showdown Duel
 //   ctx.participants()          ids dealt into this round (still at the table)
 //   ctx.has(id), ctx.connected(id)

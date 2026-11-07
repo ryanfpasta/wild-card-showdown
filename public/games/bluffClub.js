@@ -71,7 +71,7 @@
   function after(s, u, root, send) {
     var inp = root.querySelector('#fake');
     if (!inp) return;
-    var key = 'wcs.fake.' + s.code + '.' + s.round;
+    var key = 'wcs.fake.' + s.code + '.' + s.gameKey + '.' + s.round;
     try { inp.value = sessionStorage.getItem(key) || ''; } catch (e) { /* ignore */ }
     inp.addEventListener('input', function () { try { sessionStorage.setItem(key, inp.value); } catch (e) { /* ignore */ } });
     var go = function () {

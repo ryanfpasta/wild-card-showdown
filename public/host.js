@@ -76,6 +76,7 @@
       if (m.t === 'meta') WCS.meta = m;
       else if (m.t === 'state') {
         state = m;
+        WCS.checkNewGame(m);
         WCS.lastHostState = m;
         WCS.setClock(m);
         render();

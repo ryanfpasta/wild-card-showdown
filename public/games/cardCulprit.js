@@ -114,7 +114,7 @@
     var ta = root.querySelector('#answer');
     if (!ta) return;
     var count = root.querySelector('#count');
-    var key = 'wcs.draft.' + s.code + '.' + s.round;
+    var key = 'wcs.draft.' + s.code + '.' + s.gameKey + '.' + s.round;
     try { ta.value = sessionStorage.getItem(key) || ''; } catch (e) { /* ignore */ }
     var upd = function () {
       var left = WCS.meta.maxAnswer - ta.value.length;
